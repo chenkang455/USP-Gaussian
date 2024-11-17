@@ -12,7 +12,7 @@ If you like our project, please give us a star ⭐ on GitHub.  </h5>
 </h5>
 
 <p align="center">
-  <img src="imgs/top_figure.png" width="600"/>
+  <img src="imgs/top_figure.png" width="800"/>
 </p>
 
 
