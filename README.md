@@ -1,5 +1,5 @@
 <h2 align="center"> 
-  USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting </a>
+  🔫USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting </a>
 </h2>
 <h5 align="center"> 
 If you like our project, please give us a star ⭐ on GitHub.  </h5>
