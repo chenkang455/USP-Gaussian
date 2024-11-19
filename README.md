@@ -25,15 +25,15 @@ If you like our project, please give us a star ⭐ on GitHub.  </h5>
 <details open>
 <summary><strong>Novel-view synthesis comparison on the real-world dataset.</strong></summary>
 <p align="center">
-<img src="imgs/outdoor.gif" width="500" height="auto"/>
-<img src="imgs/keyboard.gif" width="500" height="auto"/>
+<img src="imgs/outdoor.gif" width="49%" height="auto"/>
+<img src="imgs/keyboard.gif" width="49%" height="auto"/>
 </p>
 </details>
 
 <details open>
 <summary><strong>Jointly optimized 3DGS and Recon-Net reconstruction on the synthetic dataset.</strong></summary>
 <p align="center">
-<img src="imgs/tanabata.gif" width="1000" height="auto"/>
+<img src="imgs/tanabata.gif" width="99%" height="auto"/>
 </p>
 </details>
 
