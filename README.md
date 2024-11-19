@@ -1,5 +1,5 @@
 <h2 align="center"> 
-  <a href="https://arxiv.org/abs/2403.09486">🔫USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting</a>
+  <a href="https://arxiv.org/abs/2403.09486">USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting</a>
 </h2>
 <h5 align="center"> 
 If you like our project, please give us a star ⭐ on GitHub.  </h5>
@@ -25,14 +25,14 @@ If you like our project, please give us a star ⭐ on GitHub.  </h5>
 <details open>
 <summary><strong>Jointly optimized 3DGS and Recon-Net reconstruction on the synthetic dataset.</strong></summary>
 <p align="center">
-<img src="imgs/middle_calib_compress.gif" width="1000" height="auto"/>
+<img src="imgs/outdoor.gif" width="1000" height="auto"/>
 </p>
 </details>
 
 <details open>
 <summary><strong>Novel-view synthesis comparison on the real-world dataset.</strong></summary>
 <p align="center">
-<img src="imgs/tanabta.gif" width="1000" height="auto"/>
+<img src="imgs/tanabata.gif" width="1000" height="auto"/>
 </p>
 </details>
 
