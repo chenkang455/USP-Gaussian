@@ -1,3 +1,4 @@
 data/*
 outputs/*
 bad_gaussians/__pycache__/*
+.vscode/
