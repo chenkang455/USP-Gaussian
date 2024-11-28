@@ -65,7 +65,7 @@ pip install nerfstudio==1.0.3
 ```
 
 ### 2. Dataset Preparation
-Well-organized synthetic and real-world datasets can be found in the [download link](https://pan.baidu.com/s/1ZvRNF4kqVB8qe1K78hmnzg?pwd=1623).
+Well-organized synthetic and real-world datasets can be found in the [download link](https://pan.baidu.com/s/1GKAbcG0804A54v02Q7Fjzg?pwd=1623).
 
 Overall, the structure of our project is formulated as:
 ```
