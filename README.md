@@ -39,14 +39,84 @@ If you like our project, please give us a star ⭐ on GitHub.  </h5>
 
 
 ## 🗓️ TODO
-- [ ] Release the synthetic/real-world dataset.
+- [x] Release the synthetic/real-world dataset.
+- [x] Release the training code.
 - [ ] Release the scripts for processing synthetic and real-world dataset.
-- [ ] Release the training and testing code.
 - [ ] Release the pretrained model.
 - [ ] Release the project page.
 
-All parts will be released before 24.11.30.
+## 🕶 Get Started
+### 1. Installation
+Our environment keeps the same with the [BAD-Gaussian](https://github.com/WU-CVGL/BAD-Gaussians) building on the `nerfstudio`. For installation, you can run the following command:
+```
+# (Optional) create a fresh conda env
+conda create --name nerfstudio -y "python<3.11"
+conda activate nerfstudio
 
+# install dependencies
+pip install --upgrade pip setuptools
+pip install "torch==2.1.2+cu118" "torchvision==0.16.2+cu118" --extra-index-url https://download.pytorch.org/whl/cu118
+
+conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit
+pip install ninja git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
+
+# install nerfstudio!
+pip install nerfstudio==1.0.3
+```
+
+### 2. Dataset Preparation
+Well-organized synthetic and real-world datasets can be found in the [download link](https://pan.baidu.com/s/1ZvRNF4kqVB8qe1K78hmnzg?pwd=1623).
+
+Overall, the structure of our project is formulated as:
+```
+<project root>
+├── bad_gaussians
+├── data
+│   ├── real_world
+│   └── synthetic
+├── imgs
+├── train.py
+└── render.py
+``` 
+
+
+### 3. Training
+* For training on the spike-deblur-nerf scene `wine`, run:
+```
+CUDA_VISIBLE_DEVICES=0 python train.py --seed_set 425 --net_lr 1e-3  \
+--use_3dgs --use_spike --use_flip  --use_multi_net --use_multi_reblur \
+--data_name wine --exp_name joint_optimization --data_path data/synthetic/wine
+```
+
+* For training on the real-world scene `sheep`, run:
+```
+CUDA_VISIBLE_DEVICES=0 python train.py --seed_set 425 --net_lr 1e-3  \
+--use_3dgs --use_spike --use_flip  --use_multi_net --use_multi_reblur \
+--data_name wine --exp_name joint_optimization --data_path data/synthetic/wine
+```
+
+### 4. Rendering
+For rendering 3D scene from the input camera trajectory, run:
+```
+CUDA_VISIBLE_DEVICES=0 python render.py interpolate \
+  --load-config outputs/sheep/bad-gaussians/<exp_date_time>/config.yml \
+  --pose-source train \
+  --frame-rate 30 \
+  --output-format video \
+  --interpolation-steps 5 \
+  --output-path renders/sheep.mp4
+```
 
 ## 🙇‍ Acknowledgment
 Our code is implemented based on the [BAD-Gaussian](https://github.com/WU-CVGL/BAD-Gaussians) and thanks for Lingzhe Zhao for his detailed help.
+
+## 🤝 Citation
+If you find our work useful in your research, please cite:
+```
+@article{chen2024usp,
+  title={USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting},
+  author={Chen, Kang and Zhang, Jiyuan and Hao, Zecheng and Zheng, Yajing and Huang, Tiejun and Yu, Zhaofei},
+  journal={arXiv preprint arXiv:2411.10504},
+  year={2024}
+}
+```
