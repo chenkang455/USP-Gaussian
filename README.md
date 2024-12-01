@@ -91,8 +91,8 @@ CUDA_VISIBLE_DEVICES=0 python train.py --seed_set 425 --net_lr 1e-3  \
 * For training on the real-world scene `sheep`, run:
 ```
 CUDA_VISIBLE_DEVICES=0 python train.py --seed_set 425 --net_lr 1e-3  \
---use_3dgs --use_spike --use_flip  --use_multi_net --use_multi_reblur \
---data_name wine --exp_name joint_optimization --data_path data/synthetic/wine
+--use_3dgs --use_spike --use_flip  --use_multi_net --use_multi_reblur --use_real \
+--data_name sheep --exp_name joint_optimization --data_path data/real_world/sheep
 ```
 
 ### 4. Rendering
