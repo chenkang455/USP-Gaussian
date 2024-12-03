@@ -44,6 +44,8 @@ If you like our project, please give us a star ⭐ on GitHub.  </h5>
 - [ ] Release the scripts for processing synthetic and real-world dataset.
 - [ ] Release the pretrained model.
 - [ ] Release the project page.
+- [ ] Multi-GPU training script & depth sequence render.
+
 
 ## 🕶 Get Started
 ### 1. Installation
