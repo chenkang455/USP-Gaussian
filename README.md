@@ -67,7 +67,7 @@ pip install nerfstudio==1.0.3
 ```
 
 ### 2. Dataset Preparation
-Well-organized synthetic and real-world datasets can be found in the [download link](https://pan.baidu.com/s/1GKAbcG0804A54v02Q7Fjzg?pwd=1623).
+Moreover, well-organized synthetic and real-world datasets can be found in the [download link](https://pan.baidu.com/s/1GKAbcG0804A54v02Q7Fjzg?pwd=1623).
 
 Overall, the structure of our project is formulated as:
 ```
@@ -81,6 +81,7 @@ Overall, the structure of our project is formulated as:
 └── render.py
 ``` 
 
+For a comprehensive guide on synthesizing the entire synthetic dataset from scratch, as well as the pose estimation method, please refer to the [Dataset](scripts/Dataset.md) file.
 
 ### 3. Training
 * For training on the spike-deblur-nerf scene `wine`, run:
