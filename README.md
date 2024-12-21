@@ -41,8 +41,7 @@ If you like our project, please give us a star ⭐ on GitHub.  </h5>
 ## 🗓️ TODO
 - [x] Release the synthetic/real-world dataset.
 - [x] Release the training code.
-- [ ] Release the scripts for processing synthetic and real-world dataset.
-- [ ] Release the pretrained model.
+- [x] Release the scripts for processing synthetic dataset.
 - [ ] Release the project page.
 - [ ] Multi-GPU training script & depth sequence render.
 
@@ -81,7 +80,10 @@ Overall, the structure of our project is formulated as:
 └── render.py
 ``` 
 
-For a comprehensive guide on synthesizing the entire synthetic dataset from scratch, as well as the pose estimation method, please refer to the [Dataset](scripts/Dataset.md) file.
+For a comprehensive guide on synthesizing the entire synthetic dataset from scratch, as well as the pose estimation method, please refer to the [Dataset](scripts/Dataset.md) file. Besides, for the dataset input explanation, please check https://github.com/chenkang455/USP-Gaussian/issues/2#issuecomment-2513610500.
+
+
+> In this project, there is no need to use the `blur_data`. The inclusion of the `blur_data` folder is just for the convenience of visualizing the input data. The sharp_data contains the provided ground truth images, which are used to calculate the image restoration and 3D restoration metrics such as PSNR, SSIM, and LPIPS. In real-world datasets, since we cannot capture the corresponding sharp images, you can place the tfp reconstructed images in sharp_data to make the code run. However, the calculation results of the metrics will not be accurate.
 
 ### 3. Training
 * For training on the spike-deblur-nerf scene `wine`, run:

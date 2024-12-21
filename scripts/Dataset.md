@@ -62,3 +62,4 @@ ns-process-data images \
     --data deblur_nerf_data/wine/sharp_data \
     --output-dir deblur_nerf_data/wine
 ```
+
