@@ -1,9 +1,12 @@
-## Dataset construction pipeline
+## Dataset Construction Pipeline
+Step into the scripts subfolder:
+```
+cd scripts
+```
 The code structure is shown as follows:
 ```
 scripts
 ├── XVFI-main
-├── run.sh
 ├── ...
 └── deblur_nerf_data
     ├── factory
@@ -19,14 +22,13 @@ scripts
         └── sharp_data
 ```
 ### Step 1: Blender
-
 The synthetic dataset scenes are from [Deblur-NeRF](https://github.com/limacv/Deblur-NeRF/). Since we need to simulate high frame-rate spike stream, 455 images are exported for each scene during rendering. The rendered images are saved under the folder `deblur_nerf_data/{scene}/raw_data`, where `scene` corresponds to different scene names in Deblur-NeRF.
 
 ### Step 2: Frame Interpolation
 We use the XVFI frame interpolation algorithm on the raw data folder `deblur_nerf_data/{scene}/raw_data` to insert 7 additional imgs between two adjacent imgs, increasing the frame rate of the image sequence, which is time-consuming and takes up a large amount of space. Run
 ```
 cd XVFI-main/
-python main.py --custom_path deblur_nerf_data/wine --gpu 0 --phase test_custom --exp_num 1 --dataset X4K1000FPS --module_scale_factor 4 --S_tst 5 --multiple 8 
+python main.py --custom_path ../deblur_nerf_data/wine --gpu 1 --phase test_custom --exp_num 1 --dataset X4K1000FPS --module_scale_factor 4 --S_tst 5 --multiple 8 
 cd ..
 ```
 
@@ -60,6 +62,8 @@ For pose estimation, run `COLMAP` implemented by the `nerfstudio` on the sharp i
 ```
 ns-process-data images \
     --data deblur_nerf_data/wine/sharp_data \
-    --output-dir deblur_nerf_data/wine
+    --output-dir deblur_nerf_data/wine \
+    --no-gpu 
 ```
 
+To this end, you have finished the whole synthetic dataset construction pipeline, welcome enjoy it 😀😀😀.

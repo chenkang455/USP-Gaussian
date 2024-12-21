@@ -1,0 +1,68 @@
+----- Model parameters -----
+2023-11-14 19:45:33
+gpu : 0
+net_type : XVFInet
+net_object : <class 'XVFInet.XVFInet'>
+exp_num : 1
+phase : test_custom
+continue_training : False
+test_img_dir : ./test_img_dir
+text_dir : ./text_dir
+checkpoint_dir : ./checkpoint_dir
+log_dir : ./log_dir
+dataset : X4K1000FPS
+train_data_path : ../Datasets/VIC_4K_1000FPS/train
+val_data_path : ../Datasets/VIC_4K_1000FPS/val
+test_data_path : ../Datasets/VIC_4K_1000FPS/test
+vimeo_data_path : ./vimeo_triplet
+epochs : 200
+freq_display : 100
+save_img_num : 4
+init_lr : 0.0001
+lr_dec_fac : 0.25
+lr_milestones : [100, 150, 180]
+lr_dec_start : 0
+batch_size : 8
+weight_decay : 0
+need_patch : True
+img_ch : 3
+nf : 64
+module_scale_factor : 4
+patch_size : 384
+num_thrds : 4
+loss_type : L1
+S_trn : 3
+S_tst : 5
+rec_lambda : 1.0
+saving_flow_flag : False
+multiple : 8
+metrics_types : ['PSNR', 'SSIM', 'tOF']
+custom_path : /d/Code/SpikeCamera/Nerf/blend_files/dataset/train_bg
+model_dir : XVFInet_X4K1000FPS_exp1
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
+Final 4k frames PSNR : 0.0
