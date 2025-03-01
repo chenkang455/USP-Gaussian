@@ -113,7 +113,7 @@ CUDA_VISIBLE_DEVICES=0 python render.py interpolate \
 ```
 
 ## 🙇‍ Acknowledgment
-Our code is implemented based on the [BAD-Gaussian](https://github.com/WU-CVGL/BAD-Gaussians) and thanks for Lingzhe Zhao for his detailed help.
+Our code is implemented based on the [BAD-Gaussian](https://github.com/WU-CVGL/BAD-Gaussians) and thanks for Lingzhe Zhao for his detailed help. Spike-to-image algorithms is implemented based on the [Spike-Zoo](https://github.com/chenkang455/Spike-Zoo?tab=readme-ov-file).
 
 ## 🤝 Citation
 If you find our work useful in your research, please cite:
