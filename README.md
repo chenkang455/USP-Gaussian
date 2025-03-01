@@ -1,5 +1,5 @@
 <h2 align="center"> 
-  <a href="https://arxiv.org/abs/2411.10504">USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting</a>
+  <a href="https://arxiv.org/abs/2411.10504">USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting (CVPR 2025)</a>
 </h2>
 <h5 align="center"> 
 If you like our project, please give us a star ⭐ on GitHub.  </h5>
@@ -66,7 +66,7 @@ pip install nerfstudio==1.0.3
 ```
 
 ### 2. Dataset Preparation
-Moreover, well-organized synthetic and real-world datasets can be found in the [download link](https://pan.baidu.com/s/1GKAbcG0804A54v02Q7Fjzg?pwd=1623).
+Moreover, well-organized synthetic and real-world datasets can be found in the [download link](https://pan.baidu.com/s/11DrLjok7i7Bb-E3ETkHSCA?pwd=1623).
 
 Overall, the structure of our project is formulated as:
 ```
