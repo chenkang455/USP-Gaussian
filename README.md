@@ -1,5 +1,5 @@
 <h2 align="center"> 
-  <a href="https://arxiv.org/abs/2411.10504">USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting (CVPR 2025)</a>
+  <a href="https://arxiv.org/abs/2411.10504">USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting (CVPR 2025 Highlight)</a>
 </h2>
 <h5 align="center"> 
 If you like our project, please give us a star ⭐ on GitHub.  </h5>
