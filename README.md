@@ -111,6 +111,7 @@ CUDA_VISIBLE_DEVICES=0 python render.py interpolate \
   --interpolation-steps 5 \
   --output-path renders/sheep.mp4
 ```
+If you encounter some problems on the rendering part, please check https://github.com/chenkang455/USP-Gaussian/issues/5.
 
 ## 🙇‍ Acknowledgment
 Our code is implemented based on the [BAD-Gaussian](https://github.com/WU-CVGL/BAD-Gaussians) and thanks for Lingzhe Zhao for his detailed help. Spike-to-image algorithms is implemented based on the [Spike-Zoo](https://github.com/chenkang455/Spike-Zoo?tab=readme-ov-file).
@@ -118,10 +119,12 @@ Our code is implemented based on the [BAD-Gaussian](https://github.com/WU-CVGL/B
 ## 🤝 Citation
 If you find our work useful in your research, please cite:
 ```
-@article{chen2024usp,
-  title={USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting},
-  author={Chen, Kang and Zhang, Jiyuan and Hao, Zecheng and Zheng, Yajing and Huang, Tiejun and Yu, Zhaofei},
-  journal={arXiv preprint arXiv:2411.10504},
-  year={2024}
+@InProceedings{Chen_2025_CVPR,
+    author    = {Chen, Kang and Zhang, Jiyuan and Hao, Zecheng and Zheng, Yajing and Huang, Tiejun and Yu, Zhaofei},
+    title     = {USP-Gaussian: Unifying Spike-based Image Reconstruction, Pose Correction and Gaussian Splatting},
+    booktitle = {Proceedings of the Computer Vision and Pattern Recognition Conference (CVPR)},
+    month     = {June},
+    year      = {2025},
+    pages     = {16609-16618}
 }
 ```
