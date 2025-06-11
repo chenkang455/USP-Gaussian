@@ -39,7 +39,7 @@ If you like our project, please give us a star ⭐ on GitHub.  </h5>
 
 
 ## 🗓️ TODO
-- [x] Release the synthetic/real-world dataset.
+- [x] Release the synthetic dataset.
 - [x] Release the training code.
 - [x] Release the scripts for processing synthetic dataset.
 - [ ] Release the project page.
@@ -66,7 +66,7 @@ pip install nerfstudio==1.0.3
 ```
 
 ### 2. Dataset Preparation
-Moreover, well-organized synthetic and real-world datasets can be found in the [download link](https://pan.baidu.com/s/11DrLjok7i7Bb-E3ETkHSCA?pwd=1623).
+Moreover, well-organized synthetic datasets can be found in the [download link](https://pan.baidu.com/s/11DrLjok7i7Bb-E3ETkHSCA?pwd=1623).
 
 Overall, the structure of our project is formulated as:
 ```
