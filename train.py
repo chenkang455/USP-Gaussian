@@ -71,6 +71,44 @@ DEFAULT_TIMEOUT = timedelta(minutes=30)
 torch.backends.cudnn.benchmark = True  # type: ignore
 
 
+def _ensure_cuda_toolkit_visible() -> None:
+    """Ensure gsplat can find CUDA toolkit (nvcc) for JIT compile.
+
+    gsplat (0.1.x) uses torch cpp_extension JIT and checks for CUDA toolkit via
+    CUDA_HOME and/or nvcc in PATH. When mp.spawn uses 'spawn', child processes
+    may miss shell-initialized PATH/CUDA_HOME; we set them here in-process.
+    """
+    cuda_candidates = ("/usr/local/cuda", "/usr/local/cuda-12.4", "/usr/local/cuda-12")
+    if "CUDA_HOME" not in os.environ or not os.environ.get("CUDA_HOME"):
+        for p in cuda_candidates:
+            if os.path.exists(p):
+                os.environ["CUDA_HOME"] = p
+                break
+    cuda_bin = os.path.join(os.environ.get("CUDA_HOME", "/usr/local/cuda"), "bin")
+    path = os.environ.get("PATH", "")
+    if os.path.exists(cuda_bin) and cuda_bin not in path.split(":"):
+        os.environ["PATH"] = f"{cuda_bin}:{path}" if path else cuda_bin
+
+
+def _warmup_gsplat_cuda() -> None:
+    """Preload/compile gsplat CUDA extension in the parent process.
+
+    This avoids multi-process races around torch_extensions build locks.
+    """
+    _ensure_cuda_toolkit_visible()
+    try:
+        from gsplat.cuda._backend import _C  # noqa: F401
+        if _C is None:
+            # Keep message actionable: this is the exact failure users see later.
+            raise RuntimeError(
+                "gsplat CUDA backend is None (CUDA toolkit not found or JIT compile failed). "
+                f"CUDA_HOME={os.environ.get('CUDA_HOME')} PATH_has_nvcc={'nvcc' in os.environ.get('PATH','')}"
+            )
+    except Exception as e:
+        CONSOLE.log(f"[red]gsplat warmup failed:[/red] {e}")
+        raise
+
+
 def _find_free_port() -> str:
     """Finds a free port."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -250,6 +288,8 @@ def main(config: TrainerConfig) -> None:
     config.print_to_terminal()
     config.save_config()
 
+    _warmup_gsplat_cuda()
+
     launch(
         main_func=train_loop,
         num_devices_per_machine=config.machine.num_devices,
@@ -302,19 +342,17 @@ if __name__ == "__main__":
     parser.add_argument('--weight_joint', type = float , default = 1)
     parser.add_argument('--net_lr', type = float , default = 1e-3)
     parser.add_argument('--num_cam', type = int , default = 13)
-    
-    
-    
     opt = parser.parse_args()
     
     method_config = ImageRestorationTrainerConfig(
         method_name="bad-gaussians",
         output_dir = Path(f"outputs/{opt.data_name}"),
+        project_name="usp-gaussian",
         experiment_name = opt.exp_name,
         steps_per_eval_image=3000,
         steps_per_eval_batch=3000,
         steps_per_save=2000,
-        steps_per_eval_all_images=1000,
+        steps_per_eval_all_images=3000,
         max_num_iterations=30001,
         mixed_precision=False,
         use_grad_scaler=False,

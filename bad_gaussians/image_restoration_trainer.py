@@ -105,6 +105,7 @@ class ImageRestorationTrainer(Trainer):
             self.config.steps_per_eval_batch = int(9e9)
             self.config.steps_per_eval_image = int(9e9)
 
+    # TODO: get eval metric and images here
     @check_eval_enabled
     @profiler.time_function
     def eval_iteration(self, step: int) -> None:
@@ -112,8 +113,9 @@ class ImageRestorationTrainer(Trainer):
         Args:
             step: Current training step.
         """
+        is_start = step == 0
         # a batch of eval rays
-        if step_check(step, self.config.steps_per_eval_batch):
+        if step_check(step, self.config.steps_per_eval_batch) or is_start:
             _, eval_loss_dict, eval_metrics_dict = self.pipeline.get_eval_loss_dict(step=step)
             eval_loss = functools.reduce(torch.add, eval_loss_dict.values())
             writer.put_scalar(name="Eval Loss", scalar=eval_loss, step=step)
@@ -121,7 +123,7 @@ class ImageRestorationTrainer(Trainer):
             writer.put_dict(name="Eval Metrics Dict", scalar_dict=eval_metrics_dict, step=step)
             
         # one eval image
-        if step_check(step, self.config.steps_per_eval_image):
+        if step_check(step, self.config.steps_per_eval_image) or is_start:
             with TimeWriter(writer, EventName.TEST_RAYS_PER_SEC, write=False) as test_t:
                 metrics_dict, images_dict = self.pipeline.get_eval_image_metrics_and_images(step=step)
             writer.put_time(
@@ -137,8 +139,5 @@ class ImageRestorationTrainer(Trainer):
 
         # all eval images
         if step_check(step, self.config.steps_per_eval_all_images):
-            # BAD-Gaussians: pass output_path to save rendered images
             metrics_dict = self.pipeline.get_average_eval_image_metrics(step=step, output_path=self.base_dir)
             writer.put_dict(name="Eval Images Metrics Dict (all images)", scalar_dict=metrics_dict, step=step)
-            re = " ".join([f'{key}: {val}' for key,val in metrics_dict.items()])
-            self.logger.info(str(step)+ "---" + re)

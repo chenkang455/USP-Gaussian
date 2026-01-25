@@ -18,6 +18,7 @@ from nerfstudio.utils import profiler
 from nerfstudio.utils.writer import to8b
 from typing import Any, Dict, List, Literal, Mapping, Optional, Tuple, Type, Union, cast
 from bad_gaussians.bad_gaussians import BadGaussiansModel
+from bad_gaussians.image_restoration_full_image_datamanager import ImageRestorationFullImageDataManager
 
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 import cv2
@@ -47,7 +48,8 @@ class ImageRestorationPipeline(VanillaPipeline):
     """Image restoration pipeline"""
 
     config: ImageRestorationPipelineConfig
-
+    datamanager: ImageRestorationFullImageDataManager
+    model: BadGaussiansModel
     
     # metrics are not accurate because the batch input is the tfp-blur not the sharp image 
     # results are stored to the tensorboard
@@ -88,6 +90,23 @@ class ImageRestorationPipeline(VanillaPipeline):
         elif normal_type == "double":
             return (img * 2).clip(0,1)
             
+    @profiler.time_function
+    def get_eval_image_metrics_and_images(self, step: int):
+        """Eval one image and return metrics + images for logging.
+
+        Nerfstudio's default implementation calls `model.get_outputs_for_camera(camera)` without passing
+        the spike input, which makes our `outputs["spike_blur"]` empty (shape (0,)) and breaks
+        tensorboard image logging. Here we explicitly pass `batch["spike"]`.
+        """
+        self.eval()
+        camera, batch = self.datamanager.next_eval_image(step)
+        # Important: pass spike so outputs contain spike_blur / virtual_views_recon, etc.
+        outputs = self.model.get_outputs_for_camera(camera, mode="uniform", spike=batch["spike"])
+        metrics_dict, images_dict = self.model.get_image_metrics_and_images(outputs, batch)
+        assert "num_rays" not in metrics_dict
+        metrics_dict["num_rays"] = (camera.height * camera.width * camera.size).item()
+        self.train()
+        return metrics_dict, images_dict
         
     @profiler.time_function
     def get_average_eval_image_metrics(
@@ -104,12 +123,14 @@ class ImageRestorationPipeline(VanillaPipeline):
         Returns:
             metrics_dict: dictionary of metrics
         """
-        # save the network 
-        image_dir = output_path / f"{step:06}"
-        path = str((image_dir / f"0000.pth").resolve())
-        if step % 10000 == 0:
-            if not image_dir.exists():
-                image_dir.mkdir(parents=True)
+        # save the network and all images
+        is_save = step % 30000 == 0
+        if is_save:
+            exp_dir = output_path / f"{step:06}"
+            image_dir = exp_dir / "images"
+            os.makedirs(exp_dir, exist_ok=True)
+            os.makedirs(image_dir, exist_ok=True)
+            path = str((exp_dir / "weights.pth").resolve())
             self.model.save_spike_net(path)
         # evaluation
         self.eval()
@@ -135,34 +156,25 @@ class ImageRestorationPipeline(VanillaPipeline):
                 inner_start = time()
                 image_idx = batch['image_idx']
                 images_dict = {
-                    f"{image_idx:04}_input": batch["degraded"][:, :, :3],
+                    f"{image_idx:04}_tfp_reblur": batch["degraded"][:, :, :3],
                     f"{image_idx:04}_gt": batch["image"][:, :, :3],
                 }
                 # mid start end, uniform -> return the re-renderd image
                 for mode in render_list:
                     outputs = self.model.get_outputs_for_camera(camera, mode=mode,spike = batch['spike'])
-                    # uniform mode: save the reblur image, spike_blur,spike_start and spike_end
                     if mode == "uniform":
-                        images_dict[f"{image_idx:04}_estimated"] = self.post_process(outputs["rgb"])
-                        images_dict[f"{image_idx:04}_estimated_spike"] = self.post_process(outputs["spike_blur"])
+                        images_dict[f"{image_idx:04}_gs_reblur"] = self.post_process(outputs["gs_img_reblur"])
+                        images_dict[f"{image_idx:04}_spike_reblur"] = self.post_process(outputs["spike_img_reblur"])
                     else:
-                        images_dict[f"{image_idx:04}_rgb_{mode}"] = self.post_process(outputs["rgb"])
-                        images_dict[f"{image_idx:04}_spike_{mode}"] = self.post_process(outputs["spike_blur"])
+                        images_dict[f"{image_idx:04}_gs_{mode}"] = self.post_process(outputs["rgb"])
+                        images_dict[f"{image_idx:04}_spike_{mode}"] = self.post_process(outputs["rgb_spike"])
                     if mode == "mid":
                         metrics_dict = self.model.get_metrics_rgb_spike(outputs, batch)
-                if step % 10000 == 0 and iteri % 5 == 0:
+                if is_save and iteri % 14 == 0:
                     for filename, data in images_dict.items():
                         data = data.detach().cpu()
-                        is_u8_image = False
-                        for tag in ["rgb", "input", "gt", "estimated", "mask",'spike']:
-                            if tag in filename:
-                                is_u8_image = True
-                        if is_u8_image:
-                            path = str((image_dir / f"{filename}.png").resolve())
-                            cv2.imwrite(path, cv2.cvtColor(to8b(data,nor = False).numpy(), cv2.COLOR_RGB2BGR))
-                        else:
-                            path = str((image_dir / f"{filename}.exr").resolve())
-                            cv2.imwrite(path, data.numpy())
+                        path = str((image_dir / f"{filename}.png").resolve())
+                        cv2.imwrite(path, cv2.cvtColor(to8b(data,nor = False).numpy(), cv2.COLOR_RGB2BGR))
                 assert "num_rays_per_sec" not in metrics_dict
                 height, width = camera.height, camera.width
                 num_rays = height * width

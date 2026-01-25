@@ -2,3 +2,5 @@ data/*
 outputs/*
 bad_gaussians/__pycache__/*
 .vscode/
+command.sh
+code.md

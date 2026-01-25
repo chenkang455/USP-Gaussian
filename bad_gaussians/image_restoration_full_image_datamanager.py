@@ -38,19 +38,10 @@ class SpikeInputDataset(InputDataset):
             spike = torch.from_numpy(load_vidar_dat(spike_filenames[image_idx],width=400,height=250))
             spike = spike[spike.shape[0] // 2 - 88 : spike.shape[0] // 2 + 89]
         data.update({"spike":spike})   
-        input_type = "tfp"
         # update sharp images for test dataset
         if self.split == 'train':
-            # blurry input from the long tfp
-            if input_type == 'tfp':
-                tfp_long = torch.mean(data['spike'][40:-40].float(),dim = 0,keepdim = False)[...,None].repeat(1,1,3)
-                data.update({"image":tfp_long})
-            # blurry input from the rgb image
-            elif input_type == 'blur':
-                image = self.get_image_float32(image_idx)
-                weights = torch.tensor([0.2989, 0.5870, 0.1140], dtype=torch.float32).view(1, 1, 3)
-                image = torch.sum(image * weights,dim = -1,keepdim=True).repeat(1,1,3)
-                data.update({"image":image})
+            tfp_long = torch.mean(data['spike'][40:-40].float(),dim = 0,keepdim = False)[...,None].repeat(1,1,3)
+            data.update({"image":tfp_long})
         elif self.split == 'test':
             image = self.get_image_float32(image_idx)
             weights = torch.tensor([0.2989, 0.5870, 0.1140], dtype=torch.float32).view(1, 1, 3)
@@ -136,7 +127,7 @@ class ImageRestorationFullImageDataManager(FullImageDatamanager):  # pylint: dis
         return camera, data
 
     def next_eval_image(self, step: int) -> Tuple[Cameras, Dict]:
-        for camera, batch in self.eval_dataloader:
+        for camera, batch in self._fixed_indices_eval_dataloader:
             assert camera.shape[0] == 1
             return camera, batch
         raise ValueError("No more eval images")
