@@ -334,7 +334,7 @@ class TrainConfig:
     use_flip: bool = True
     use_multi_net: bool = True
     use_multi_reblur: bool = True
-    use_depth: bool = True
+    use_depth: bool = False
     use_real: bool = False
     data_path: str = 'data/synthetic/wine'
     data_name: str = 'test'

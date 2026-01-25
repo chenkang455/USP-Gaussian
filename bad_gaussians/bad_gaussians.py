@@ -390,6 +390,7 @@ class BadGaussiansModel(SplatfactoModel):
         outputs["spike_img_seq"] = torch.stack(spike_img_seq,dim = 0)
         outputs["spike_img_reblur"] = outputs["spike_img_seq"].mean(dim = 0)
         # tfp
+        outputs["spike_tfp_mid"] = spike_tfp_seq[self.num_cam // 2]
         outputs["spike_tfp_seq"] = torch.stack(spike_tfp_seq,dim = 0)
         outputs["spike_tfp_reblur"] = outputs["spike_tfp_seq"].mean(dim = 0)
         return outputs
@@ -556,22 +557,34 @@ class BadGaussiansModel(SplatfactoModel):
     ) -> Tuple[Dict[str, float], Dict[str, torch.Tensor]]:
         ## save images
         images_dict = {}
-        # mid image
-        images_dict["img_gs"] = outputs["gs_img_mid"]
-        images_dict["img_recon"] = outputs["spike_img_mid"]
-        # reblur image
-        images_dict["reblur_gs"] = outputs["gs_img_reblur"]
-        images_dict["reblur_recon"] = outputs["spike_img_reblur"]
-        images_dict["reblur_tfp"] = outputs["spike_tfp_reblur"]
+        # TODO: ------------------------ Image branch ------------------------
+        save_img_keys = [
+            "gs_img_mid", "gs_img_reblur", 
+            "spike_img_mid", "spike_img_reblur", 
+            "spike_tfp_mid", "spike_tfp_reblur"
+        ]
+        for key in save_img_keys:
+            images_dict[key] = outputs[key]
         # x 2
         for key, value in images_dict.items():
             images_dict[key] = value * 2
         # gt image
         images_dict["img_gt"] = batch["image"]
-        
-        # calculate metrics
-        metrics_dict = self.get_metrics_rgb_spike(outputs, batch)
+        # TODO: ------------------------ Depth branch ------------------------
+        save_depth_keys = [
+            "gs_depth_mid", 
+        ]
+        for key in save_depth_keys:
+            depth = outputs[key]
+            images_dict[key] = depth
+            # tensorboard depth visualization: fixed global range -> [0, 1]
+            depth01 = (depth[..., 0] / 10.0).clamp(0.0, 1.0)
+            if "accumulation" in outputs:
+                depth01 = torch.where(outputs["accumulation"][..., 0] > 0, depth01, depth01.new_zeros(()))
+            images_dict[f"{key}"] = depth01[..., None].repeat(1, 1, 3)
 
+        ## calculate metrics
+        metrics_dict = self.get_metrics_rgb_spike(outputs, batch)
         return metrics_dict, images_dict
 
     
