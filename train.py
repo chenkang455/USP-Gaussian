@@ -137,7 +137,7 @@ def train_loop(local_rank: int, world_size: int, config: TrainerConfig, global_r
         config: config file specifying training regimen
     """
     global opt
-    config.machine.seed = config.machine.seed + global_rank + opt.seed_set
+    config.machine.seed = config.machine.seed + global_rank + cfg.seed_set
     _set_random_seed(config.machine.seed)
     trainer = config.setup(local_rank=local_rank, world_size=world_size)
     trainer.setup()
@@ -324,31 +324,33 @@ from bad_gaussians.image_restoration_pipeline import ImageRestorationPipelineCon
 from bad_gaussians.image_restoration_trainer import ImageRestorationTrainerConfig
 from bad_gaussians.nerf_studio_dataparser import NerfstudioDataParserConfig
 from pathlib import Path
+from dataclasses import dataclass
+
+@dataclass
+class TrainConfig:
+    seed_set: int = 425 
+    use_3dgs: bool = True
+    use_spike: bool = True
+    use_flip: bool = True
+    use_multi_net: bool = True
+    use_multi_reblur: bool = True
+    use_real: bool = False
+    data_path: str = 'data/synthetic/wine'
+    data_name: str = 'test'
+    exp_name: str = 'test'
+    weight_3dgs: float = 1
+    weight_spike: float = 1
+    weight_joint: float = 1
+    net_lr: float = 1e-3
+    num_cam: int = 13
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Train a radiance field with nerfstudio.')
-    parser.add_argument('--seed_set', type=int, default=425, help='Seed for random number generation.')
-    parser.add_argument('--use_3dgs', action='store_true', default = True)
-    parser.add_argument('--use_spike', action='store_true', default = True)
-    parser.add_argument('--use_flip', action='store_true', default = True)
-    parser.add_argument('--use_multi_net', action='store_true', default = True)
-    parser.add_argument('--use_multi_reblur', action='store_true', default = True)
-    parser.add_argument('--use_real', action='store_true', default = False)
-    parser.add_argument('--data_path', type = str , default = 'data/synthetic/wine')
-    parser.add_argument('--data_name', type = str , default = 'test')
-    parser.add_argument('--exp_name', type = str , default = 'test')
-    parser.add_argument('--weight_3dgs', type = float , default = 1)
-    parser.add_argument('--weight_spike', type = float , default = 1)
-    parser.add_argument('--weight_joint', type = float , default = 1)
-    parser.add_argument('--net_lr', type = float , default = 1e-3)
-    parser.add_argument('--num_cam', type = int , default = 13)
-    opt = parser.parse_args()
-    
+    cfg = tyro.cli(TrainConfig)
     method_config = ImageRestorationTrainerConfig(
         method_name="bad-gaussians",
-        output_dir = Path(f"outputs/{opt.data_name}"),
+        output_dir = Path(f"outputs/{cfg.data_name}"),
         project_name="usp-gaussian",
-        experiment_name = opt.exp_name,
+        experiment_name = cfg.exp_name,
         steps_per_eval_image=3000,
         steps_per_eval_batch=3000,
         steps_per_save=2000,
@@ -363,14 +365,14 @@ if __name__ == "__main__":
             datamanager=ImageRestorationFullImageDataManagerConfig(
                 cache_images="gpu",  # reduce CPU usage, caused by pin_memory()?
                 dataparser=NerfstudioDataParserConfig(
-                    data = Path(opt.data_path),
+                    data = Path(cfg.data_path),
                     load_3D_points=True,
                     eval_mode="fraction",
                 ),
-                use_real = opt.use_real
+                use_real = cfg.use_real
             ),
             model=BadGaussiansModelConfig(
-                camera_optimizer=BadCameraOptimizerConfig(mode="linear", num_virtual_views=opt.num_cam),
+                camera_optimizer=BadCameraOptimizerConfig(mode="linear", num_virtual_views=cfg.num_cam),
                 use_scale_regularization=True,
                 continue_cull_post_densification=False,
                 cull_alpha_thresh=5e-3,
@@ -378,14 +380,14 @@ if __name__ == "__main__":
                 num_downscales=0,
                 resolution_schedule=250,
                 tv_loss_lambda=None,
-                use_spike = opt.use_spike,
-                use_3dgs = opt.use_3dgs,
-                use_flip = opt.use_flip,
-                use_multi_net = opt.use_multi_net,
-                use_multi_reblur = opt.use_multi_reblur,
-                weight_3dgs = 1,
-                weight_spike = 1,
-                weight_joint = 1
+                use_spike = cfg.use_spike,
+                use_3dgs = cfg.use_3dgs,
+                use_flip = cfg.use_flip,
+                use_multi_net = cfg.use_multi_net,
+                use_multi_reblur = cfg.use_multi_reblur,
+                weight_3dgs = cfg.weight_3dgs,
+                weight_spike = cfg.weight_spike,
+                weight_joint = cfg.weight_joint
             ),
         ),
         optimizers={
@@ -424,7 +426,7 @@ if __name__ == "__main__":
                 ),
             },
             "spike_net": {
-                "optimizer": AdamOptimizerConfig(lr=opt.net_lr, eps=1e-15),
+                "optimizer": AdamOptimizerConfig(lr=cfg.net_lr, eps=1e-15),
                 "scheduler": ExponentialDecaySchedulerConfig(
                     lr_final=1e-5,
                     max_steps=30000,

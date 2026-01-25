@@ -19,7 +19,6 @@ from nerfstudio.utils.writer import EventName, TimeWriter
 
 from bad_gaussians.image_restoration_pipeline import ImageRestorationPipeline, ImageRestorationPipelineConfig
 from bad_gaussians.bad_viewer import BadViewer
-from bad_gaussians.spike_utils import setup_logging
 
 
 @dataclass
@@ -52,7 +51,6 @@ class ImageRestorationTrainer(Trainer):
             grad_scaler=self.grad_scaler,
         )
         self.optimizers = self.setup_optimizers()
-        self.logger = setup_logging(self.base_dir / 'result.txt')
 
         # set up viewer if enabled
         viewer_log_path = self.base_dir / self.config.viewer.relative_log_filename
