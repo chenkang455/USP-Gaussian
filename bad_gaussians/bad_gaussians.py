@@ -491,7 +491,7 @@ class BadGaussiansModel(SplatfactoModel):
                 scale_reg = torch.tensor(0.0).to(self.device)
             loss_dict['scale_reg_loss'] = scale_reg
             # 2. 3dgs reblur loss
-            loss_dict['3dgs_reblur_loss'] = self.weight_3dgs * self.get_loss_l1_ssim(outputs['rgb'],batch['image'])
+            loss_dict['3dgs_reblur_loss'] = self.weight_3dgs * self.get_loss_l1_ssim(outputs['gs_img_reblur'],batch['image'])
 
         # 3. spike-net reblur loss
         if self.use_spike == True and self.use_multi_reblur == False:
