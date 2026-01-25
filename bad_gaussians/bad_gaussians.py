@@ -92,6 +92,9 @@ class BadGaussiansModelConfig(SplatfactoModelConfig):
     use_multi_reblur: bool = False
     """use multi-reblur loss function"""
     
+    use_depth: bool = True
+    """use depth loss"""
+    
     weight_3dgs: float = 1
     """3dgs loss weight"""
 
@@ -209,6 +212,7 @@ class BadGaussiansModel(SplatfactoModel):
         # USP-Gaussian: render virtual views
         gs_img_seq = []
         gs_alpha_seq = []
+        gs_depth_seq = []
         spike_img_seq = []
         spike_tfp_seq = []
         idx = 0
@@ -324,6 +328,8 @@ class BadGaussiansModel(SplatfactoModel):
                 alphas = torch.sigmoid(opacities_crop) * comp[:, None]
             elif self.config.rasterize_mode == "classic":
                 alphas = torch.sigmoid(opacities_crop)
+                
+            ## rgb output
             rgb, alpha = rasterize_gaussians(  # type: ignore
                 self.xys,
                 depths,
@@ -342,59 +348,50 @@ class BadGaussiansModel(SplatfactoModel):
             rgb = torch.clamp(rgb, max=1.0)  # type: ignore
             gs_img_seq.append(rgb)
             gs_alpha_seq.append(alpha)
-        depth_im = None
-        # spike
-        spike_img_seq = torch.stack(spike_img_seq,dim = 0)
-        spike_img_reblur = spike_img_seq.mean(dim = 0)
-
-        # spike-tfp
-        spike_tfp_seq = torch.stack(spike_tfp_seq,dim = 0)
-        spike_tfp_reblur = spike_tfp_seq.mean(dim = 0)
+            
+            ## depth output
+            if not is_training or self.config.use_depth == True:
+                depth_im = rasterize_gaussians(  # type: ignore
+                    self.xys,
+                    depths,
+                    self.radii,
+                    conics,
+                    num_tiles_hit,  # type: ignore
+                    depths[:, None].repeat(1, 3),
+                    alphas,
+                    H,
+                    W,
+                    BLOCK_WIDTH,
+                    background=torch.zeros(3, device=self.device),
+                )[..., 0:1]  # type: ignore
+                depth_im = torch.where(alpha > 0, depth_im / alpha, depth_im.detach().max())
+            else:
+                depth_im = background.new_zeros((H, W, 1))
+            gs_depth_seq.append(depth_im)
         
-        # image
-        gs_img_seq = torch.stack(gs_img_seq, dim=0)
-        gs_img_reblur = gs_img_seq.mean(dim=0)
-        
-        # alpha
-        gs_alpha_seq = torch.stack(gs_alpha_seq, dim=0)
-        alpha = gs_alpha_seq.mean(dim=0)
-
-        # eval
-        if not is_training:
-            depth_im = rasterize_gaussians(  # type: ignore
-                self.xys,
-                depths,
-                self.radii,
-                conics,
-                num_tiles_hit,  # type: ignore
-                depths[:, None].repeat(1, 3),
-                torch.sigmoid(opacities_crop),
-                H,
-                W,
-                BLOCK_WIDTH,
-                background=torch.zeros(3, device=self.device),
-            )[..., 0:1]  # type: ignore
-            depth_im = torch.where(alpha > 0, depth_im / alpha, depth_im.detach().max())
+        ## output calculation
         outputs = {}
         ## TODO: ------------------------ 3DGS branch ------------------------
-        # ! rgb key should be the first one owing to the viewer bug 
-        # 3dgs
+        # rgb image interface
         outputs["rgb"] = gs_img_seq[self.num_cam // 2]
-        outputs["gs_img_reblur"] = gs_img_reblur
-        outputs["gs_img_seq"] = gs_img_seq
+        # image
+        outputs["gs_img_mid"] = gs_img_seq[self.num_cam // 2]
+        outputs["gs_img_seq"] = torch.stack(gs_img_seq, dim=0)
+        outputs["gs_img_reblur"] = outputs["gs_img_seq"].mean(dim=0)
+        # depth
+        outputs["gs_depth_mid"] = gs_depth_seq[self.num_cam // 2]
+        outputs["gs_depth_seq"] = torch.stack(gs_depth_seq, dim=0)
         # others
-        outputs["depth"] = depth_im
-        outputs["accumulation"] = alpha
         outputs["background"] = background
+        outputs["accumulation"] = gs_alpha_seq[self.num_cam // 2]
         ## TODO: ------------------------ Spike branch ------------------------
-        # spike recon
-        outputs["rgb_spike"] = spike_img_seq[self.num_cam // 2]
-        outputs["spike_img_reblur"] = spike_img_reblur
-        outputs["spike_img_seq"] = spike_img_seq
+        # image
+        outputs["spike_img_mid"] = spike_img_seq[self.num_cam // 2]
+        outputs["spike_img_seq"] = torch.stack(spike_img_seq,dim = 0)
+        outputs["spike_img_reblur"] = outputs["spike_img_seq"].mean(dim = 0)
         # tfp
-        outputs["spike_tfp_seq"] = spike_tfp_seq
-        outputs["spike_tfp_reblur"] = spike_tfp_reblur
-        
+        outputs["spike_tfp_seq"] = torch.stack(spike_tfp_seq,dim = 0)
+        outputs["spike_tfp_reblur"] = outputs["spike_tfp_seq"].mean(dim = 0)
         return outputs
 
     def after_train(self, step: int):
@@ -461,19 +458,8 @@ class BadGaussiansModel(SplatfactoModel):
     
     def get_loss_dict(self, outputs, batch, metrics_dict=None,step = 0):
         """ Add loss from the spike-net
-
-        Args:
-            batch['image']: blurry input. H * W * 1, from ``image_restoration_full_image_datamanager.py``
-            outputs['rgb']: reblur result from the 3DGS. H * W * 1 
-            outputs['spike_img_reblur']: reblur result from the spike-net. H * W * 1 
-            outputs['gs_img_seq'] : sequence from the 3DGS. 10 * H * W * 1  
-            outputs['spike_img_seq'] : sequence from the spike-net. 10 * H * W * 1  
-            outputs['img_seq_spike_recon_flip'] : sequence from the spike-net with flipped spike input. 10 * H * W * 1   
-        Returns:
-            _type_: _description_
         """
-        #   "rgb": rgb, "gs_img_seq": gs_img_seq, "spike_img_reblur":spike_img_reblur, "spike_img_seq":spike_img_seq}
-
+        # loss dictionary
         loss_dict = {}
         if self.use_3dgs == True:
             # 1. scale loss
@@ -537,8 +523,8 @@ class BadGaussiansModel(SplatfactoModel):
         
     def get_metrics_rgb_spike(self,outputs, batch) -> Dict[str, torch.Tensor]:
         metrics = {}
-        rgb = outputs['rgb']
-        spike_img = outputs['rgb_spike']
+        rgb = outputs['gs_img_mid']
+        spike_img = outputs['spike_img_mid']
         gt = batch['image']
         # channel change
         rgb = torch.permute(rgb,(2,0,1))[None].clip(0,1)
@@ -571,8 +557,8 @@ class BadGaussiansModel(SplatfactoModel):
         ## save images
         images_dict = {}
         # mid image
-        images_dict["img_gs"] = outputs["rgb"]
-        images_dict["img_recon"] = outputs["rgb_spike"]
+        images_dict["img_gs"] = outputs["gs_img_mid"]
+        images_dict["img_recon"] = outputs["spike_img_mid"]
         # reblur image
         images_dict["reblur_gs"] = outputs["gs_img_reblur"]
         images_dict["reblur_recon"] = outputs["spike_img_reblur"]

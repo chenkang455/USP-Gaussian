@@ -166,8 +166,8 @@ class ImageRestorationPipeline(VanillaPipeline):
                         images_dict[f"{image_idx:04}_gs_reblur"] = self.post_process(outputs["gs_img_reblur"])
                         images_dict[f"{image_idx:04}_spike_reblur"] = self.post_process(outputs["spike_img_reblur"])
                     else:
-                        images_dict[f"{image_idx:04}_gs_{mode}"] = self.post_process(outputs["rgb"])
-                        images_dict[f"{image_idx:04}_spike_{mode}"] = self.post_process(outputs["rgb_spike"])
+                        images_dict[f"{image_idx:04}_gs_{mode}"] = self.post_process(outputs["gs_img_mid"])
+                        images_dict[f"{image_idx:04}_spike_{mode}"] = self.post_process(outputs["spike_img_mid"])
                     if mode == "mid":
                         metrics_dict = self.model.get_metrics_rgb_spike(outputs, batch)
                 if is_save and iteri % 14 == 0:

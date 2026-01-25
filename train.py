@@ -334,6 +334,7 @@ class TrainConfig:
     use_flip: bool = True
     use_multi_net: bool = True
     use_multi_reblur: bool = True
+    use_depth: bool = True
     use_real: bool = False
     data_path: str = 'data/synthetic/wine'
     data_name: str = 'test'
@@ -383,6 +384,7 @@ if __name__ == "__main__":
                 use_spike = cfg.use_spike,
                 use_3dgs = cfg.use_3dgs,
                 use_flip = cfg.use_flip,
+                use_depth = cfg.use_depth,
                 use_multi_net = cfg.use_multi_net,
                 use_multi_reblur = cfg.use_multi_reblur,
                 weight_3dgs = cfg.weight_3dgs,
