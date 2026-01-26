@@ -136,8 +136,8 @@ def train_loop(local_rank: int, world_size: int, config: TrainerConfig, global_r
         world_size: total number of gpus available
         config: config file specifying training regimen
     """
-    global opt
-    config.machine.seed = config.machine.seed + global_rank + cfg.seed_set
+    global cfg
+    config.machine.seed = config.machine.seed + global_rank + cfg.seed
     _set_random_seed(config.machine.seed)
     trainer = config.setup(local_rank=local_rank, world_size=world_size)
     trainer.setup()
@@ -328,17 +328,21 @@ from dataclasses import dataclass
 
 @dataclass
 class TrainConfig:
-    seed_set: int = 425 
+    # algorithm settings
     use_3dgs: bool = True
     use_spike: bool = True
-    use_flip: bool = True
-    use_multi_net: bool = True
-    use_multi_reblur: bool = True
     use_depth: bool = False
+    # trick settings
+    use_flip: bool = False
+    use_multi_net: bool = False
+    use_multi_reblur: bool = False
+    # data settings 
     use_real: bool = False
     data_path: str = 'data/synthetic/wine'
     data_name: str = 'test'
     exp_name: str = 'test'
+    # training hyper-parameters settings
+    seed: int = 425 
     weight_3dgs: float = 1
     weight_spike: float = 1
     weight_joint: float = 1

@@ -92,7 +92,7 @@ class BadGaussiansModelConfig(SplatfactoModelConfig):
     use_multi_reblur: bool = False
     """use multi-reblur loss function"""
     
-    use_depth: bool = True
+    use_depth: bool = False
     """use depth loss"""
     
     weight_3dgs: float = 1
