@@ -67,8 +67,8 @@ from nerfstudio.utils.rich_utils import CONSOLE
 
 DEFAULT_TIMEOUT = timedelta(minutes=30)
 
-# speedup for when input size to model doesn't change (much)
-torch.backends.cudnn.benchmark = True  # type: ignore
+torch.backends.cudnn.benchmark = False  # type: ignore                                                        
+torch.backends.cudnn.deterministic = True                                                                     
 
 
 def _ensure_cuda_toolkit_visible() -> None:
