@@ -372,8 +372,9 @@ class BadGaussiansModel(SplatfactoModel):
         ## output calculation
         outputs = {}
         ## TODO: ------------------------ 3DGS branch ------------------------
-        # rgb image interface
+        # nerfstudio interface
         outputs["rgb"] = gs_img_seq[self.num_cam // 2]
+        outputs["depth"] = gs_depth_seq[self.num_cam // 2]
         # image
         outputs["gs_img_mid"] = gs_img_seq[self.num_cam // 2]
         outputs["gs_img_seq"] = torch.stack(gs_img_seq, dim=0)
