@@ -5,3 +5,4 @@ bad_gaussians/__pycache__/*
 command.sh
 code.md
 plans/
+.claude/
